@@ -1,0 +1,5 @@
+name: Arhangel Calendar
+description: Third custom module.
+package: Arhangel_custom
+type: module
+core_version_requirement: ^8.8.0 || ^9.0

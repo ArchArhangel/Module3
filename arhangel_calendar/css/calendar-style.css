@@ -1,0 +1,34 @@
+.path-custom-calendar .main-container .region-content {
+  max-width: 1650px;
+  margin: 0 auto;
+}
+.path-custom-calendar .arhangel-calendar-custom-calendar-form .arhangel_calendar_tables th {
+  padding: 10px 0;
+  text-align: center;
+}
+.path-custom-calendar .arhangel-calendar-custom-calendar-form .arhangel_calendar_tables td {
+  padding: 10px 0;
+  text-align: center;
+  width: 100%;
+}
+.path-custom-calendar .arhangel-calendar-custom-calendar-form .arhangel_calendar_tables td input {
+  padding: 0;
+  text-align: center;
+}
+.path-custom-calendar .arhangel-calendar-custom-calendar-form .arhangel_calendar_tables td input input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.path-custom-calendar .arhangel-calendar-custom-calendar-form .arhangel_calendar_tables td input  input[type=number] {
+  -moz-appearance: textfield;
+}
+.path-custom-calendar .arhangel-calendar-custom-calendar-form .arhangel_calendar_tables .calendar-year {
+  width: 50px;
+}
+.path-custom-calendar .arhangel-calendar-custom-calendar-form .arhangel_calendar_tables .calendar-calculation {
+  width: 75px;
+}
+.path-custom-calendar .arhangel-calendar-custom-calendar-form .arhangel_calendar_tables .calendar-month {
+  width: 100px;
+}

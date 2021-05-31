@@ -1,0 +1,4 @@
+calendar-style:
+  css:
+    component:
+      css/calendar-style.css: {}

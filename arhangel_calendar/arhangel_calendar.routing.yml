@@ -1,0 +1,7 @@
+arhangel_calendar.form:
+  path: '/custom_calendar'
+  defaults:
+    _form: '\Drupal\arhangel_calendar\Form\CustomCalendarForm'
+    _title: 'Custom Calendar'
+  requirements:
+    _permission: 'access content'
