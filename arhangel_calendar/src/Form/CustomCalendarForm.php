@@ -1,8 +1,5 @@
 <?php
 
-/**
- * Contains \Drupal\arhangel_calendar\Form\CustomCalendarForm.
- */
 namespace Drupal\arhangel_calendar\Form;
 
 use Drupal\Core\Form\FormBase;
@@ -18,6 +15,80 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class CustomCalendarForm extends FormBase {
 
   /**
+   * Our static month array.
+   *
+   * @var array|string[]
+   */
+  protected static array $months = [
+    'jan',
+    'feb',
+    'mar',
+    'apr',
+    'may',
+    'jun',
+    'jul',
+    'aug',
+    'sep',
+    'oct',
+    'nov',
+    'dec',
+  ];
+
+  /**
+   * Our static quartal array.
+   *
+   * @var array|\string[][]
+   */
+  protected static array $quartals = [
+    'q1' => [
+      'jan',
+      'feb',
+      'mar',
+    ],
+    'q2' => [
+      'apr',
+      'may',
+      'jun',
+    ],
+    'q3' => [
+      'jul',
+      'aug',
+      'sep',
+    ],
+    'q4' => [
+      'oct',
+      'nov',
+      'dec',
+    ],
+  ];
+
+  /**
+   * Our static row items array.
+   *
+   * @var array|string[]
+   */
+  protected static array $rowItems = [
+    'year',
+    'jan',
+    'feb',
+    'mar',
+    'q1',
+    'apr',
+    'may',
+    'jun',
+    'q2',
+    'jul',
+    'aug',
+    'sep',
+    'q3',
+    'oct',
+    'nov',
+    'dec',
+    'q4',
+    'ytd',
+  ];
+
+  /**
    * Create dependency injection.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
@@ -26,54 +97,32 @@ class CustomCalendarForm extends FormBase {
    * @return \Drupal\arhangel_calendar\Form\CustomCalendarForm
    *   Form.
    */
-  public static function create(ContainerInterface $container): CustomCalendarForm {
+  public static function create(ContainerInterface $container) {
     return new static($container->get('messenger'));
   }
 
   /**
-   * Object for Drupal Messenger.
-   *
-   * @var \Drupal\Core\Messenger\Messenger
-   */
-  protected $messenger;
-
-  /**
    * CustomCalendarForm constructor.
    *
-   * @param \Drupal\Core\Messenger\Messenger $messengerInterface
+   * @param \Drupal\Core\Messenger\Messenger $messenger
+   *   Messenger variable.
    */
-  public function __construct(Messenger $messengerInterface) {
-    $this->messenger = $messengerInterface;
+  public function __construct(Messenger $messenger) {
+    $this->messenger = $messenger;
   }
 
   /**
-   * {@inheritDoc}
-   * @return string
+   * {@inheritdoc}
    */
   public function getFormId() {
     return 'arhangel_calendar_custom_calendar_form';
   }
 
   /**
-   * @param array $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *
-   * @return array
+   * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state): array {
-
-    $months = [
-      'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
-    ];
-    $quartals = [
-      'q1' => ['jan', 'feb', 'mar'],
-      'q2' => ['apr', 'may', 'jun'],
-      'q3' => ['jul', 'aug', 'sep'],
-      'q4' => ['oct', 'nov', 'dec'],
-    ];
-
+  public function buildForm(array $form, FormStateInterface $form_state) {
     $tables = $form_state->get('calendar');
-
     if (empty($tables)) {
       $tables = 1;
       $form_state->set('calendar', $tables);
@@ -84,7 +133,6 @@ class CustomCalendarForm extends FormBase {
     $form['calendar']['#tree'] = TRUE;
 
     for ($i = 0; $i < $tables; $i++) {
-
       $form['calendar'][$i]['addRow'] = [
         '#type' => 'submit',
         '#value' => $this->t('Add Year'),
@@ -106,8 +154,24 @@ class CustomCalendarForm extends FormBase {
         '#caption' => $this->t('Calendar') . $i,
         '#title' => $this->t('Custom Calendar'),
         '#header' => [
-          'Year', 'Jan', 'Feb', 'Mar', 'Q1', 'Apr', 'May', 'Jun', 'Q2',
-          'Jul', 'Aug', 'Sep', 'Q3', 'Oct', 'Nov', 'Dec', 'Q4', 'YTD',
+          $this->t('Year'),
+          $this->t('Jan'),
+          $this->t('Feb'),
+          $this->t('Mar'),
+          $this->t('Q1'),
+          $this->t('Apr'),
+          $this->t('May'),
+          $this->t('Jun'),
+          $this->t('Q2'),
+          $this->t('Jul'),
+          $this->t('Aug'),
+          $this->t('Sep'),
+          $this->t('Q3'),
+          $this->t('Oct'),
+          $this->t('Nov'),
+          $this->t('Dec'),
+          $this->t('Q4'),
+          $this->t('YTD'),
         ],
         '#attributes' => [
           'id' => 'line_wrap' . $i,
@@ -117,36 +181,38 @@ class CustomCalendarForm extends FormBase {
       ];
 
       $rows = $form_state->get('count' . $i);
-
       if (empty($rows)) {
         $rows = 1;
         $form_state->set('count' . $i, $rows);
       }
 
       for ($j = $rows; $j > 0; $j--) {
-        $date = strval(intval(date('Y') - $j + 1));
+        $date = (int) date('Y') - $j + 1;
         $form['calendar'][$i]['table'][$j] = $this->addNewRow($date);
 
-        if (isset($form_state->getTriggeringElement()['#name']) == 'main-submit') {
-          $position = $form_state->getTriggeringElement()['#name'];
-        }
-        else {
-          $position = '';
-        }
+        isset($form_state->getTriggeringElement()['#name'])
+          ? $position = $form_state->getTriggeringElement()['#name']
+          : $position = '';
 
         if ($position === 'main-submit') {
           $month_list = [];
           $quartal_list = [];
           $ytd = 0;
-          foreach ($months as $month) {
+          foreach (self::$months as $month) {
             $month_list[$month] = $form_state->getValue([
-              'calendar', $i, 'table', $j, $month,
+              'calendar',
+              $i,
+              'table',
+              $j,
+              $month,
             ]);
           }
-          foreach ($quartals as $quartal => $quartal_month) {
+
+          foreach (self::$quartals as $quartal => $quartal_month) {
             $quartal_value = 0;
             foreach ($quartal_month as $month_item) {
-              $quartal_value = floatval($quartal_value) + floatval($month_list[$month_item]);
+              $quartal_value = (float) $quartal_value
+                + (float) $month_list[$month_item];
             }
             if ($quartal_value != 0) {
               $quartal_list[$quartal] = round((($quartal_value + 1) / 3), 2);
@@ -155,9 +221,10 @@ class CustomCalendarForm extends FormBase {
               $quartal_list[$quartal] = '';
             }
           }
+
           foreach ($quartal_list as $quartal_item => $item_value) {
             $form['calendar'][$i]['table'][$j][$quartal_item]['#value'] = $item_value;
-            $ytd = floatval($ytd) + floatval($item_value);
+            $ytd = (float) $ytd + (float) $item_value;
           }
           if ($ytd != 0) {
             $ytd = round((($ytd + 1) / 4), 2);
@@ -209,18 +276,17 @@ class CustomCalendarForm extends FormBase {
 
   /**
    * Add new row to table.
-   * @param string $year
+   *
+   * @param int $year
+   *   Year.
    *
    * @return array
+   *   Table.
    */
-  public function addNewRow(string $year) {
-    $row_items = [
-      'year', 'jan', 'feb', 'mar', 'q1', 'apr', 'may', 'jun', 'q2',
-      'jul', 'aug', 'sep', 'q3', 'oct', 'nov', 'dec', 'q4', 'ytd',
-    ];
+  public function addNewRow(int $year) {
     $row = [];
-    foreach ($row_items as $item) {
-      if ($item == 'year') {
+    foreach (self::$rowItems as $item) {
+      if (($item == 'year')) {
         $row[$item] = [
           '#title' => $item,
           '#value' => $year,
@@ -232,7 +298,13 @@ class CustomCalendarForm extends FormBase {
           ],
         ];
       }
-      elseif (($item == 'q1') || ($item == 'q2') || ($item == 'q3') || ($item == 'q4') || ($item == 'ytd')) {
+      elseif (
+        ($item == 'q1')
+        || ($item == 'q2')
+        || ($item == 'q3')
+        || ($item == 'q4')
+        || ($item == 'ytd')
+      ) {
         $row[$item] = [
           '#title' => $item,
           '#type' => 'textfield',
@@ -255,12 +327,16 @@ class CustomCalendarForm extends FormBase {
       }
     }
     return $row;
+
   }
 
   /**
    * Add row callback function.
+   *
    * @param array $form
+   *   Form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
    */
   public function addRowCallback(array &$form, FormStateInterface $form_state) {
     $table = $form_state->getTriggeringElement()['#name'];
@@ -273,8 +349,11 @@ class CustomCalendarForm extends FormBase {
 
   /**
    * Add table callback function.
+   *
    * @param array $form
+   *   Form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
    */
   public function addTableCallback(array &$form, FormStateInterface $form_state) {
     $table = $form_state->get('calendar');
@@ -285,10 +364,14 @@ class CustomCalendarForm extends FormBase {
 
   /**
    * Ajax form callback return.
+   *
    * @param array $form
+   *   Form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
    *
    * @return mixed
+   *   Full form.
    */
   public function formReturn(array &$form, FormStateInterface $form_state) {
     $table = $form_state->getTriggeringElement()['#name'];
@@ -298,46 +381,39 @@ class CustomCalendarForm extends FormBase {
 
   /**
    * Ajax table callback return.
+   *
    * @param array $form
+   *   Form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
    *
    * @return mixed
+   *   Full table.
    */
   public function tableReturn(array &$form, FormStateInterface $form_state) {
     return $form['calendar'];
   }
 
   /**
-   * {@inheritDoc}
-   * @param array $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-//    parent::validateForm($form, $form_state);
   }
 
   /**
-   * {@inheritDoc}
-   * @param array $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-
-    $months = [
-      'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
-    ];
-
-    $errors = FALSE;
     $tables = $form_state->getValue('calendar');
     $table_count = $form_state->get('calendar');
     $start = [];
     $end = [];
-    $row_count = [];
+
     foreach ($tables as $table_key => $table) {
       $rows = [];
       foreach ($table['table'] as $row_key => $row) {
         foreach ($row as $item_key => $item) {
-          if (in_array($item_key, $months)) {
+          if (in_array($item_key, self::$months)) {
             if (empty($start[$table_key]) && !empty($item)) {
               $start[$table_key] = [$row_key, $item_key];
             }
@@ -348,49 +424,34 @@ class CustomCalendarForm extends FormBase {
           }
         }
       }
+      $rows = array_filter($rows,
+        function ($s) {
+          return $s !== '';
+        }
+      );
       $count = count($rows);
-      for ($i = 0; $i < $count; $i++) {
-        if ($rows[$i] === '') {
-          unset($rows[$i]);
-        }
-        else {
-          break;
-        }
-      }
-      for ($i = $count - 1; $i >= 0; $i--) {
-        if ($rows[$i] === '') {
-          unset($rows[$i]);
-        }
-        else {
-          break;
-        }
-      }
-      if (in_array('', $rows)) {
-        $errors = TRUE;
+      if (
+        ((array_key_last($rows) - array_key_first($rows) + 1) != $count)
+        && ($count != 0)
+      ) {
+        $this->messenger()->addError($this->t('Invalid'));
+        return FALSE;
       }
     }
-    if ($table_count > 1) {
-      for ($i = 0; $i < $table_count; $i++) {
-        array_push($row_count, $form_state->get('count' . $i));
-      }
-      if (in_array(1, $row_count)) {
-        for ($i = 1; $i < $table_count; $i++) {
-          if (($start[0] != $start[$i]) || ($end[0] != $end[$i])) {
-            $errors = TRUE;
-          }
-        }
+
+    for ($i = 1; $i < $table_count; $i++) {
+      if (
+        ($start[0] != $start[$i])
+        || ($end[0] != $end[$i])
+      ) {
+        $this->messenger()->addError($this->t('Invalid'));
+        return FALSE;
       }
     }
-    if (!$errors) {
-      \Drupal::messenger()->addStatus(t('Valid'));
-//      $this->messenger->addStatus('Valid');
-      $form_state->setRebuild();
-    }
-    else {
-      \Drupal::messenger()->addError(t('InValid'));
-//      $this->messenger->addError('Invalid');
-    }
-    return $errors;
+
+    $this->messenger()->addStatus($this->t('Valid'));
+    $form_state->setRebuild();
+    return TRUE;
   }
 
 }
